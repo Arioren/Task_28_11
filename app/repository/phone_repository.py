@@ -75,3 +75,22 @@ def count_devices_connected_to_device(device_id):
                     ''', device_id=device_id).single()
         respond = respond1['count(d2)'] + respond2['count(d1)']
         return respond
+
+# determine whether there is a direct connection between two devices.
+def is_direct_connection(from_device_id, to_device_id):
+    with driver.session() as session:
+        respond1 = session.run('''
+            MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
+            WHERE d1.id = $from_device_id AND d2.id = $to_device_id
+            RETURN i
+            ''',
+            from_device_id=from_device_id,
+            to_device_id=to_device_id).single()
+        respond2 = session.run('''
+            MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
+            WHERE d1.id = $to_device_id AND d2.id = $from_device_id
+            RETURN i
+            ''',
+            from_device_id=from_device_id,
+            to_device_id=to_device_id).single()
+        return respond1 is not None or respond2 is not None
