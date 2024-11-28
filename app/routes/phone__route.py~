@@ -55,12 +55,3 @@ def count_devices_connected_to_device(device_id):
 def is_connected(device_id, device_id2):
     respond = repo.is_direct_connection(device_id, device_id2)
     return jsonify(respond), 200
-
-
-@phone_bluprint.route('/phone_tracker/interaction/<string:device_id>', methods=['GET'])
-def get_all_interactions(device_id):
-    respond = repo.get_most_recent_interaction(device_id)
-    if respond is None:
-        return jsonify({'error': 'no interactions'}), 400
-    respond.timestamp = respond.timestamp.isoformat()
-    return jsonify(respond), 200

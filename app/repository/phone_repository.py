@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from Tools.scripts.make_ctype import method
 from toolz.curried import reduce
 
 from app.db.database import driver
-from app.db.model import Device
+from app.db.model import Device, Interaction
 from app.repository.device_repo import create_device_repo
 
 
@@ -94,3 +96,46 @@ def is_direct_connection(from_device_id, to_device_id):
             from_device_id=from_device_id,
             to_device_id=to_device_id).single()
         return respond1 is not None or respond2 is not None
+
+
+
+# fetch the most recent interaction for a specific device, sorted by timestamp.
+def get_most_recent_interaction(device_id):
+    with driver.session() as session:
+        respond = session.run('''
+            MATCH (d:Device {id: $device_id})-[i:CONNECTED]->(other:Device)
+            RETURN i, other.id AS to_device
+            ORDER BY i.timestamp DESC
+            LIMIT 1
+            ''',
+            device_id=device_id
+        )
+        record = respond.single()
+        respond2 = session.run('''
+            MATCH (d:Device {id: $device_id})<-[i:CONNECTED]-(other:Device)
+            RETURN i, other.id AS to_device
+            ORDER BY i.timestamp DESC
+            LIMIT 1
+            ''',
+            device_id=device_id
+        )
+        record2 = respond2.single()
+        if record is None and record2 is None:
+            return
+        if record is None:
+            final = record2
+        elif record2 is None:
+            final = record
+        else:
+            final = record if record['i']['timestamp'] > record2['i']['timestamp'] else record2
+        interaction_data = final["i"]  # Get the relationship properties
+        return Interaction(
+            from_device=device_id,
+            to_device=final["to_device"],
+            method=interaction_data.get("method", ""),
+            bluetooth_version=interaction_data.get("bluetooth_version", ""),
+            signal_strength_dbm=interaction_data.get("signal_strength_dbm", 0),
+            distance_meters=interaction_data.get("distance_meters", 0.0),
+            duration_seconds=interaction_data.get("duration_seconds", 0),
+            timestamp=interaction_data.get("timestamp")
+        )
