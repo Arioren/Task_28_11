@@ -65,19 +65,24 @@ def get_all_devices_connected():
 
 # finding all devices connected to each other with a signal strength stronger than -60
 def get_all_devices_with_signal():
-    query = '''
-    MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
-    WHERE i.signal_strength_dbm > -60
-    RETURN d1, d2
-    '''
     with driver.session() as session:
-        respond = session.run(query).data()
-        respond = reduce(lambda x, y: x + [Device(**y['d1']), Device(**y['d2'])], respond, [])
-        result = []
-        for device in respond:
-            if all(device.id != d.id for d in result):
-                result.append(device)
-        return result
+        query = """
+                        MATCH (start:Device)
+                        MATCH (end:Device)
+                        WHERE start <> end
+                        MATCH path = shortestPath((start)-[:CONNECTED*]->(end))
+                        WHERE ALL(r IN relationships(path) WHERE r.signal_strength_dbm > -60)
+                        WITH path, length(path) as pathLength
+                        ORDER BY pathLength DESC
+                        LIMIT 1
+                        RETURN nodes(path) AS devices
+                        """
+        result = session.run(query).single()
+
+        if result:
+            return [node["id"] for node in result["devices"]]
+        else:
+            return None
 
 
 # count how many devices are connected to a specific device based on a provided ID

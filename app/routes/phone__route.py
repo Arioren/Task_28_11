@@ -48,12 +48,12 @@ def get_all_devices_with_signal():
     return jsonify(respond), 200
 
 
-@phone_bluprint.route('/phone_tracker/<device_id>', methods=['GET'])
+@phone_bluprint.route('/phone_tracker/body/<device_id>', methods=['GET'])
 def count_devices_connected_to_device(device_id):
     respond = repo.count_devices_connected_to_device(device_id)
     return jsonify(respond), 200
 
-@phone_bluprint.route('/phone_tracker/<string:device_id>/<string:device_id2>', methods=['GET'])
+@phone_bluprint.route('/phone_tracker/body/<string:device_id>/<string:device_id2>', methods=['GET'])
 def is_connected(device_id, device_id2):
     respond = repo.is_direct_connection(device_id, device_id2)
     return jsonify(respond), 200

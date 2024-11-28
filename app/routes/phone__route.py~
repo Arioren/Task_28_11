@@ -25,6 +25,8 @@ def get_interaction():
                              'location': Location(**respond['devices'][0]['location'])},
             'interaction': Interaction(**respond['interaction'])
         }
+        if data['first_device']['device'].id == data['second_device']['device'].id:
+            raise
     except Exception as e:
         return jsonify({'error': 'bad data'}), 400
     try:
