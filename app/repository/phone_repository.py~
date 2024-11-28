@@ -62,16 +62,11 @@ def get_all_devices_with_signal():
 
 # count how many devices are connected to a specific device based on a provided ID
 def count_devices_connected_to_device(device_id):
+    query = '''
+    MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
+    WHERE d1.id = $device_id
+    RETURN count(d2)
+    '''
     with driver.session() as session:
-        respond1 = session.run('''
-                    MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
-                    WHERE d1.id = $device_id
-                    RETURN count(d2)
-                    ''', device_id=device_id).single()
-        respond2 = session.run('''
-                    MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
-                    WHERE d2.id = $device_id
-                    RETURN count(d1)
-                    ''', device_id=device_id).single()
-        respond = respond1['count(d2)'] + respond2['count(d1)']
+        respond = session.run(query, device_id=device_id).single()
         return respond
