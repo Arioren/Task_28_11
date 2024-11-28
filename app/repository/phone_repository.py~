@@ -51,7 +51,7 @@ def get_all_devices_connected():
                 WITH path, length(path) as pathLength
                 ORDER BY pathLength DESC
                 LIMIT 1
-                RETURN pathLength, nodes(path) AS devices
+                RETURN path, pathLength, nodes(path) AS devices, relationships(path) AS connections
                 """
         result = session.run(query).single()
 
@@ -63,6 +63,7 @@ def get_all_devices_connected():
         else:
             return None
 
+print(get_all_devices_connected())
 # finding all devices connected to each other with a signal strength stronger than -60
 def get_all_devices_with_signal():
     query = '''
