@@ -19,12 +19,12 @@ def get_data(data: dict):
             MATCH (d1:Device), (d2:Device)
             WHERE d1.id = $from_device_id AND d2.id = $to_device_id
             MERGE (d1)-[i:INTERACTION{
-                method: $method,
-                bluetooth_version: $bluetooth_version,
-                signal_strength_dbm: $signal_strength_dbm,
-                distance_meters: $distance_meters,
-                duration_seconds: $duration_seconds,
-                timestamp: $timestamp}]->(d2)
+                method: method,
+                bluetooth_version: bluetooth_version,
+                signal_strength_dbm: signal_strength_dbm,
+                distance_meters: distance_meters,
+                duration_seconds: duration_seconds,
+                timestamp: timestamp}]->(d2)
             ''',
             from_device_id=interaction.from_device,
             to_device_id=interaction.to_device,

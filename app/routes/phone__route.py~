@@ -23,7 +23,7 @@ def get_interaction():
             'interaction': Interaction(**respond['interaction'])
         }
     except Exception as e:
-        return jsonify({'error': 'bad data'}), 400
+        return jsonify({'error': str(e)}), 400
     try:
         repo.get_data(data)
         return jsonify({'status': 'success'}), 200
