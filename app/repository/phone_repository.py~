@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from Tools.scripts.make_ctype import method
 from toolz.curried import reduce
 
@@ -35,7 +37,7 @@ def get_data(data: dict):
             signal_strength_dbm=interaction.signal_strength_dbm,
             distance_meters=interaction.distance_meters,
             duration_seconds=interaction.duration_seconds,
-            timestamp=interaction.timestamp)
+            timestamp=datetime.strptime(interaction.timestamp, "%Y-%m-%dT%H:%M:%S"))
 
 #finding all devices connected to each other using the Bluetooth method, and how long is the path.
 def get_all_devices_connected():
@@ -75,3 +77,35 @@ def count_devices_connected_to_device(device_id):
                     ''', device_id=device_id).single()
         respond = respond1['count(d2)'] + respond2['count(d1)']
         return respond
+
+# determine whether there is a direct connection between two devices.
+def is_direct_connection(from_device_id, to_device_id):
+    with driver.session() as session:
+        respond1 = session.run('''
+            MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
+            WHERE d1.id = $from_device_id AND d2.id = $to_device_id
+            RETURN i
+            ''',
+            from_device_id=from_device_id,
+            to_device_id=to_device_id).single()
+        respond2 = session.run('''
+            MATCH (d1:Device)-[i:CONNECTED]->(d2:Device)
+            WHERE d1.id = $to_device_id AND d2.id = $from_device_id
+            RETURN i
+            ''',
+            from_device_id=from_device_id,
+            to_device_id=to_device_id).single()
+        return respond1 is not None or respond2 is not None
+
+# fetch the most recent interaction for a specific device, sorted by timestamp.
+def get_most_recent_interaction(device_id):
+    with driver.session() as session:
+        respond = session.run('''
+            MATCH (d:Device)-[i:CONNECTED]->(:Device)
+            WHERE d.id = $device_id
+            MATCH (d)<-[j:CONNECTED]-(:Device)
+            RETURN i, j
+            ORDER BY i.timestamp DESC
+            ''',
+            device_id=device_id).single()
+        return Device(**respond['i'])

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 
 @dataclass
@@ -10,4 +11,4 @@ class Interaction:
     signal_strength_dbm: int
     distance_meters: float
     duration_seconds: int
-    timestamp: str
+    timestamp: datetime

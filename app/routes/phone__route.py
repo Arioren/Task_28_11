@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, request, jsonify
 import app.repository.phone_repository as repo
 from app.db.model import Device, Interaction, Location
@@ -15,6 +17,7 @@ def get_interaction():
         del first_device['location']
         second_device = {**respond['devices'][1]}
         del second_device['location']
+        respond['interaction']['timestamp'] = datetime.strptime(respond['interaction']['timestamp'], "%Y-%m-%dT%H:%M:%S")
         data = {
             'first_device': {'device': Device(**first_device),
                              'location': Location(**respond['devices'][0]['location'])},
