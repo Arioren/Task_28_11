@@ -1,0 +1,7 @@
+NEO4J_URI = 'bolt://localhost:7687'
+NEO4J_USER = 'neo4j'
+NEO4J_PASSWORD = 'pwd1234567890'
+
+
+DB_URL = 'mongodb://172.21.89.32:27017/'
+
