@@ -29,3 +29,15 @@ def get_interaction():
         return jsonify({'status': 'success'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+@phone_bluprint.route('/phone_tracker', methods=['GET'])
+def get_all_devices_connected():
+    respond = repo.get_all_devices_connected()
+    return jsonify(respond), 200
+
+
+@phone_bluprint.route('/phone_tracker/signal', methods=['GET'])
+def get_all_devices_with_signal():
+    respond = repo.get_all_devices_with_signal()
+    return jsonify(respond), 200

@@ -4,11 +4,19 @@ from app.db.model import Device
 
 def create_device_repo(device: Device, location):
     with driver.session() as session:
+        res = session.run('''
+        MATCH (d:Device {id: $id})
+        RETURN d
+        ''',
+        id=device.id)
+        if res.single() is not None:
+            return
         session.run('''
             CREATE (d:Device {id: $id,
                 brand: $brand,
                 model: $model,
-                os: $os})
+                os: $os,
+                name: $name})
             CREATE (l:Location {
                 latitude: $latitude,
                 longitude: $longitude,
@@ -20,6 +28,7 @@ def create_device_repo(device: Device, location):
             brand=device.brand,
             model=device.model,
             os=device.os,
+            name=device.name,
             latitude=location.latitude,
             longitude=location.longitude,
             altitude_meters=location.altitude_meters,
